@@ -152,7 +152,7 @@ model=train_model(model,criterion,optimizer,step_lr_scheduler,num_epochs=20)
 model=models.resnet18(pretrained=True)
 for param in model.parameters():
     param.requires_grad=False
-num_ftrs=model.fc.input_features 
+num_ftrs=model.fc.in_features 
 
 model.fc=nn.Linear(num_ftrs,2)
 model.to(device)
