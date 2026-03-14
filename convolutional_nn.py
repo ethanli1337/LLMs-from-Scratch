@@ -78,80 +78,88 @@ images, labels = next(dataiter)
 # show images
 imshow(torchvision.utils.make_grid(images))
 
-class ConvNet(nn.Module):
-    def __init__(self):
-        super(ConvNet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
-
-    def forward(self, x):
-        # -> n, 3, 32, 32
-        x = self.pool(F.relu(self.conv1(x)))  # -> n, 6, 14, 14
-        x = self.pool(F.relu(self.conv2(x)))  # -> n, 16, 5, 5
-        x = x.view(-1, 16 * 5 * 5)            # -> n, 400
-        x = F.relu(self.fc1(x))               # -> n, 120
-        x = F.relu(self.fc2(x))               # -> n, 84
-        x = self.fc3(x)                       # -> n, 10
-        return x
+conv1=nn.Conv2d(3,6,5)
+pool=nn.MaxPool2d(2,2)
+conv2=nn.Conv2d(6,16,5)
+print(images.shape)
+x=conv1(images)
+plot_feature_maps(x)
 
 
-model = ConvNet().to(device)
+# class ConvNet(nn.Module):
+#     def __init__(self):
+#         super(ConvNet, self).__init__()
+#         self.conv1 = nn.Conv2d(3, 6, 5)
+#         self.pool = nn.MaxPool2d(2, 2)
+#         self.conv2 = nn.Conv2d(6, 16, 5)
+#         self.fc1 = nn.Linear(16 * 5 * 5, 120)
+#         self.fc2 = nn.Linear(120, 84)
+#         self.fc3 = nn.Linear(84, 10)
 
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+#     def forward(self, x):
+#         # -> n, 3, 32, 32
+#         x = self.pool(F.relu(self.conv1(x)))  # -> n, 6, 14, 14
+#         x = self.pool(F.relu(self.conv2(x)))  # -> n, 16, 5, 5
+#         x = x.view(-1, 16 * 5 * 5)            # -> n, 400
+#         x = F.relu(self.fc1(x))               # -> n, 120
+#         x = F.relu(self.fc2(x))               # -> n, 84
+#         x = self.fc3(x)                       # -> n, 10
+#         return x
 
-n_total_steps = len(train_loader)
-for epoch in range(num_epochs):
-    for i, (images, labels) in enumerate(train_loader):
-        # origin shape: [4, 3, 32, 32] = 4, 3, 1024
-        # input_layer: 3 input channels, 6 output channels, 5 kernel size
-        images = images.to(device)
-        labels = labels.to(device)
 
-        # Forward pass
-        outputs = model(images)
-        loss = criterion(outputs, labels)
+# model = ConvNet().to(device)
 
-        # Backward and optimize
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+# criterion = nn.CrossEntropyLoss()
+# optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
-        if (i+1) % 2000 == 0:
-            print (f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{n_total_steps}], Loss: {loss.item():.4f}')
+# n_total_steps = len(train_loader)
+# for epoch in range(num_epochs):
+#     for i, (images, labels) in enumerate(train_loader):
+#         # origin shape: [4, 3, 32, 32] = 4, 3, 1024
+#         # input_layer: 3 input channels, 6 output channels, 5 kernel size
+#         images = images.to(device)
+#         labels = labels.to(device)
 
-print('Finished Training')
-PATH = './cnn.pth'
-torch.save(model.state_dict(), PATH)
+#         # Forward pass
+#         outputs = model(images)
+#         loss = criterion(outputs, labels)
 
-with torch.no_grad():
-    n_correct = 0
-    n_samples = 0
-    n_class_correct = [0 for i in range(10)]
-    n_class_samples = [0 for i in range(10)]
-    for images, labels in test_loader:
-        images = images.to(device)
-        labels = labels.to(device)
-        outputs = model(images)
-        # max returns (value ,index)
-        _, predicted = torch.max(outputs, 1)
-        n_samples += labels.size(0)
-        n_correct += (predicted == labels).sum().item()
+#         # Backward and optimize
+#         optimizer.zero_grad()
+#         loss.backward()
+#         optimizer.step()
+
+#         if (i+1) % 2000 == 0:
+#             print (f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{n_total_steps}], Loss: {loss.item():.4f}')
+
+# print('Finished Training')
+# PATH = './cnn.pth'
+# torch.save(model.state_dict(), PATH)
+
+# with torch.no_grad():
+#     n_correct = 0
+#     n_samples = 0
+#     n_class_correct = [0 for i in range(10)]
+#     n_class_samples = [0 for i in range(10)]
+#     for images, labels in test_loader:
+#         images = images.to(device)
+#         labels = labels.to(device)
+#         outputs = model(images)
+#         # max returns (value ,index)
+#         _, predicted = torch.max(outputs, 1)
+#         n_samples += labels.size(0)
+#         n_correct += (predicted == labels).sum().item()
         
-        for i in range(batch_size):
-            label = labels[i]
-            pred = predicted[i]
-            if (label == pred):
-                n_class_correct[label] += 1
-            n_class_samples[label] += 1
+#         for i in range(batch_size):
+#             label = labels[i]
+#             pred = predicted[i]
+#             if (label == pred):
+#                 n_class_correct[label] += 1
+#             n_class_samples[label] += 1
 
-    acc = 100.0 * n_correct / n_samples
-    print(f'Accuracy of the network: {acc} %')
+#     acc = 100.0 * n_correct / n_samples
+#     print(f'Accuracy of the network: {acc} %')
 
-    for i in range(10):
-        acc = 100.0 * n_class_correct[i] / n_class_samples[i]
-        print(f'Accuracy of {classes[i]}: {acc} %')
+#     for i in range(10):
+#         acc = 100.0 * n_class_correct[i] / n_class_samples[i]
+#         print(f'Accuracy of {classes[i]}: {acc} %')
