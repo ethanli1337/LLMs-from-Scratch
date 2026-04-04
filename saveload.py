@@ -22,7 +22,15 @@ checkpoint={
 
 # torch.save(checkpoint,"checkpoint.pth")
 loaded_checkpoint=torch.load("checkpoint.pth")
+epoch=loaded_checkpoint["epoch"]
 
+model=Model(n_input_features=6)
+optimizer=torch.optim.SGD(model.parameters(),lr=0)
+
+model.load_state_dict(checkpoint["model_state"])
+optimizer.load_state_dict(checkpoint["optim_state"])
+
+print(optimizer.state_dict())
 # for param in model.parameters():
 #     print(param)
 # FILE="model.pth"
@@ -38,3 +46,8 @@ loaded_checkpoint=torch.load("checkpoint.pth")
 # loaded_model.eval()
 # for param in model.parameters():
 #     print(param)
+
+# device = torch.device("cuda")
+# model = Model(*args, **kwargs)
+# model.load_state_dict(torch.load(PATH, map_location="cuda:0"))  # Choose whatever GPU device number you want
+# model.to(device)
